@@ -6,7 +6,6 @@ author: Atsushi Sakai (@Atsushi_twi)
 
 """
 #!/usr/bin/python
-
 import random
 import math
 import numpy as np
@@ -16,7 +15,7 @@ from scipy.spatial import cKDTree
 # parameter
 N_SAMPLE = 500  # number of sample_points
 N_KNN = 10  # number of edge from one sampled point
-MAX_EDGE_LEN = 30.0  # [m] Maximum edge length
+MAX_EDGE_LEN = 50.0  # [m] Maximum edge length
 
 show_animation = True
 
@@ -38,7 +37,7 @@ class Node:
 
 
 def prm_planning(sx, sy, gx, gy, ox, oy, rr):
-    # print('sx={} ,sy={}, gx={}, gy={}, ox={}, oy={}, rr={}'.format(sx,sy,gx,gy,ox,oy,rr))
+
     obstacle_kd_tree = cKDTree(np.vstack((ox, oy)).T)
 
     sample_x, sample_y = sample_points(sx, sy, gx, gy,
@@ -48,10 +47,10 @@ def prm_planning(sx, sy, gx, gy, ox, oy, rr):
 
     road_map = generate_road_map(sample_x, sample_y, rr, obstacle_kd_tree)
 
-    rx, ry = dijkstra_planning(
+    tr_x, tr_y = dijkstra_planning(
         sx, sy, gx, gy, road_map, sample_x, sample_y)
 
-    return rx, ry
+    return tr_x, tr_y
 
 
 def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree):
@@ -98,14 +97,14 @@ def generate_road_map(sample_x, sample_y, rr, obstacle_kd_tree):
     sample_kd_tree = cKDTree(np.vstack((sample_x, sample_y)).T)
 
     for (i, ix, iy) in zip(range(n_sample), sample_x, sample_y):
-        
+
         dists, indexes = sample_kd_tree.query([ix, iy], k=n_sample)
         edge_id = []
-        # print('for 1')
+
         for ii in range(1, len(indexes)):
             nx = sample_x[indexes[ii]]
             ny = sample_y[indexes[ii]]
-            # print('for 2')
+
             if not is_collision(ix, iy, nx, ny, rr, obstacle_kd_tree):
                 edge_id.append(indexes[ii])
 
@@ -131,10 +130,10 @@ def dijkstra_planning(sx, sy, gx, gy, road_map, sample_x, sample_y):
     road_map: ??? [m]
     sample_x: ??? [m]
     sample_y: ??? [m]
-    
+
     @return: Two lists of path coordinates ([x1, x2, ...], [y1, y2, ...]), empty list when no path was found
     """
-    print('dijkstra planning')
+
     start_node = Node(sx, sy, 0.0, -1)
     goal_node = Node(gx, gy, 0.0, -1)
 
@@ -195,15 +194,15 @@ def dijkstra_planning(sx, sy, gx, gy, road_map, sample_x, sample_y):
         return [], []
 
     # generate final course
-    rx, ry = [goal_node.x], [goal_node.y]
+    tr_x, tr_y = [goal_node.x], [goal_node.y]
     parent_index = goal_node.parent_index
     while parent_index != -1:
         n = closed_set[parent_index]
-        rx.append(n.x)
-        ry.append(n.y)
+        tr_x.append(n.x)
+        tr_y.append(n.y)
         parent_index = n.parent_index
 
-    return rx, ry
+    return tr_x, tr_y
 
 
 def plot_road_map(road_map, sample_x, sample_y):  # pragma: no cover
@@ -245,27 +244,18 @@ def sample_points(sx, sy, gx, gy, rr, ox, oy, obstacle_kd_tree):
 def main():
     print(__file__ + " start!!")
 
-    px = np.loadtxt('/home/juansantacoloma/rycs/taller4/taller4_rycsv/px.csv',delimiter=',')
-    py = np.loadtxt('/home/juansantacoloma/rycs/taller4/taller4_rycsv/py.csv',delimiter=',')
-    
-    px = px/10
-    py = py/10
-    print(px)
-    # px = np.flip(px)
-    # py = np.flip(py)
-    
-    # path_array = np.column_stack((px, py))
-
-
-
-
     # start and goal position
-    sx = -2.0  # [m]
-    sy = 1.0  # [m]
-    gx = 4.0  # [m]
-    gy = 4.0  # [m]
-    robot_size = 0.5  # [m]
+    sx = 0.0  # [m]
+    sy = 0.0  # [m]
+    gx = -2.5  # [m]
+    gy = -8.0  # [m]
+    robot_size = 0.1  # [m]
 
+    px = np.loadtxt('/home/juansantacoloma/rycs/taller4/taller4_rycsv/scripts/px.csv',delimiter=',')
+    py = np.loadtxt('/home/juansantacoloma/rycs/taller4/taller4_rycsv/scripts/py.csv',delimiter=',')
+
+    # px = px/10
+    # py = py/10
     # ox = []
     # oy = []
 
@@ -295,12 +285,19 @@ def main():
         plt.grid(True)
         plt.axis("equal")
 
-    rx, ry = prm_planning(sx, sy, gx, gy, px, py, robot_size)
+    tr_x, tr_y = prm_planning(sx, sy, gx, gy, px, py, robot_size)
 
-    assert rx, 'Cannot found path'
+    assert tr_x, 'Cannot found path'
+
+    tr_x = np.array(tr_x)
+    tr_y = np.array(tr_y)
+    tr_x = tr_x[::-1]
+    tr_y = tr_y[::-1]
+    np.savetxt('tr_x.csv',tr_x,delimiter=',')
+    np.savetxt('tr_y.csv',tr_y,delimiter=',')
 
     if show_animation:
-        plt.plot(rx, ry, "-r")
+        plt.plot(tr_x, tr_y, "-r")
         plt.pause(0.001)
         plt.show()
 

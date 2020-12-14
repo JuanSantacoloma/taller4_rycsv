@@ -27,11 +27,13 @@ class Communication_ROS:
         self.width = 0
         self.data = 0
         self.resol = 0.0
+        self.rx = []
+        self.rx = []
 
-        self.sx = -2.0 
-        self.sy = 1.0
-        self.gx = 4.0
-        self.gy = 4.0
+        self.sx = 0.0 
+        self.sy = 0.0
+        self.gx = -1.0
+        self.gy = 0.0
         # self.ogrid = rospy.Subscriber(self.topicSubs, OccupancyGrid, callback, queue_size=10)
         rospy.Subscriber("/map", OccupancyGrid, self.callback)
         
@@ -62,15 +64,21 @@ class Communication_ROS:
         rows = rows + mov_x 
         cols = cols + mov_y 
 
-        self.rx = np.array(rows)/10
-        self.ry = np.array(cols)/10
-        # print(self.rx)
-        rr=0.5
-        # print('sx={} ,sy={}, gx={}, gy={}, ox={}, oy={}, rr={}'.format(self.sx, self.sy, self.gx, self.gy, self.rx, self.ry,rr))
-        self.roadx ,self.roady = prm_planning(self.sx, self.sy, self.gx, self.gy, self.rx, self.ry, rr)
+        self.px = np.array(rows)/20
+        self.py = np.array(cols)/20
 
-        self.roadx = self.roadx[::-1]
-        self.roady = self.roady[::-1]
+        np.savetxt('px.csv',self.px,delimiter=',')
+        np.savetxt('py.csv',self.py,delimiter=',')
+
+        # print(self.rx)
+        # rr=0.5
+        # print('sx={} ,sy={}, gx={}, gy={}, ox={}, oy={}, rr={}'.format(self.sx, self.sy, self.gx, self.gy, self.rx, self.ry,rr))
+        # self.roadx ,self.roady = prm_planning(self.sx, self.sy, self.gx, self.gy, self.rx, self.ry, rr)
+
+        # self.roadx = self.roadx[::-1]
+        # self.roady = self.roady[::-1]
+
+
 
         # print(self.roadx)
         # print(self.roady)

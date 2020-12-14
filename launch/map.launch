@@ -16,4 +16,5 @@
         name="rviz" 
         pkg="rviz" 
         args="-d $(find taller4_rycsv)/config/rviz_taller4.rviz" />
+        
 </launch>
