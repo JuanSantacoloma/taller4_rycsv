@@ -30,7 +30,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from nav_msgs import occupancyGrid
 
 COLOR_MAP = (0, 8)
 
